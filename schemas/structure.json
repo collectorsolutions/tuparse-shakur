@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "dom": {
+      "$ref": "./dom"
+    },
+    "css": {
+      "$ref": "./css"
+    }
+  }
+}
