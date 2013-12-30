@@ -5,8 +5,8 @@ JSON parsing/serializing tool used to create DOM elements and CSS rules.
 
 ### Dependencies
 
-* requirejs
-* put-selector
+* [requirejs](https://github.com/jrburke/requirejs)
+* [put-selector](https://github.com/kriszyp/put-selector)
 
 ### Modules
 #### parser
