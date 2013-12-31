@@ -1,78 +1,76 @@
 define({
   dom: {
-    root: {
-      ".modal-container": {
-        role: "dialog",
-        "div.header": {
-          "h3.title": {
-            text: "Header"
-          },
-          "button.close.pull-right": {
-            text: "x",
-            type: "button"
-          }
+    ".modal-container": {
+      role: "dialog",
+      "div.header": {
+        "h3.title": {
+          text: "Header"
         },
-        "div.body": {
-          "form": {
-            "h4.title": {
-              text: "Please Enter Some Information"
+        "button.close.pull-right": {
+          text: "x",
+          type: "button"
+        }
+      },
+      "div.body": {
+        "form": {
+          "h4.title": {
+            text: "Please Enter Some Information"
+          },
+          "div.form-group.hr-item-0": {
+            label: {
+              "for": "name",
+              text: "Name"
             },
-            "div.form-group.hr-item-0": {
-              label: {
-                "for": "name",
-                text: "Name"
+            "input.form-control": {
+              id: "name",
+              name: "name",
+              type: "text"
+            }
+          },
+          "div.form-group.hr-item-1": {
+            label: {
+              "for": "email",
+              text: "Email"
+            },
+            "div.input-group": {
+              "span.input-group-addon": {
+                text: "@"
               },
               "input.form-control": {
-                id: "name",
-                name: "name",
+                id: "email",
+                name: "email",
                 type: "text"
-              }
-            },
-            "div.form-group.hr-item-1": {
-              label: {
-                "for": "email",
-                text: "Email"
-              },
-              "div.input-group": {
-                "span.input-group-addon": {
-                  text: "@"
-                },
-                "input.form-control": {
-                  id: "email",
-                  name: "email",
-                  type: "text"
-                }
               }
             }
           }
-        },
-        "div.footer": {
-          "div.form-group.pull-right": {
+        }
+      },
+      "div.footer": {
+        "div.form-group.pull-right": {
+          events: {
+            "click": {
+              selector: "button",
+              mid: "tuparse-shakur/tests/handles",
+              method: "delegated"
+            }
+          },
+          "button.btn.btn-success": {
+            text: "OK",
+            type: "button",
             events: {
               "click": {
-                selector: "button",
                 mid: "tuparse-shakur/tests/handles",
-                method: "delegated"
+                method: "success"
+              },
+              "click-1": {
+                mid: "tuparse-shakur/tests/handles",
+                method: "success2"
               }
-            },
-            "button.btn.btn-success": {
-              text: "OK",
-              type: "button",
-              events: {
-                "click": {
-                  mid: "tuparse-shakur/tests/handles",
-                  method: "success"
-                },
-                "click-1": {
-                  mid: "tuparse-shakur/tests/handles",
-                  method: "success2"
-                }
-              }
-            },
-            "button.btn.btn-default": {
-              text: "Cancel",
-              type: "button"
             }
+          },
+          "button.btn.btn-default": {
+            text: "Cancel",
+            type: "button"
           }
         }
       }

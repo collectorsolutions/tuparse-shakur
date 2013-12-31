@@ -16,9 +16,16 @@
         "tuparse-shakur/tests/data",
         "jquery"
       ], function (parser, css, data) {
-        var parsed = parser.parse(data);
+        var parsed = parser.parse(data),
+          container = document.getElementById("mainContainer"),
+          node, i, nodes;
 
-        document.getElementById("mainContainer").appendChild(parsed.dom);
+        nodes = parsed.dom;
+        i = 0;
+        while (node = nodes[i++]) {
+          container.appendChild(node);
+        }
+
         css.addStyles(parsed.css);
       });
     </script>

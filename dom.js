@@ -16,7 +16,7 @@ define([
     //    String
     var classes = node.className.split(/\s/g).join(".");
 
-    return (replacement ? replacement : node).tagName.toLowerCase() + (classes.length ? "." + classes : "");
+    return (replacement || node).tagName.toLowerCase() + (classes.length ? "." + classes : "");
   };
 
   return {
@@ -81,7 +81,7 @@ define([
         // parentPart: Object
         var part = {},
           selectors = {},
-          tagName, i, child, selector, attribute;
+          tagName, i, child, selector, attribute, attributes, childNodes;
 
         if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
           tagName = node.tagName.toLowerCase();
@@ -107,11 +107,15 @@ define([
             structure = part;
           }
 
-          for (i = 0; (child = node.attributes[i]); ++i) {
+          i = 0;
+          attributes = node.attributes;
+          while (attribute = attributes[i++]) {
             serialize(child, part);
           }
 
-          for (i = 0; (child = node.childNodes[i]); ++i) {
+          i = 0;
+          childNodes = node.childNodes;
+          while (child = childNodes[i++]) {
             serialize(child, part);
           }
 
@@ -144,13 +148,13 @@ define([
       var tags = vars.tags,
         tagSelector = /(\.\w+\d*((\-[\w\d]+)+)?)?(\[([^\]=]+)=?['"]?([^\]'"]*)['"]?\])?/g,
         cleanEvent = /\-[\w\d\-]*/g,
-        root = structure.root,
         deduper = 0,
-        parent = put("div"),
         options = opts || {},
         eventHandler = options.handler,
         handler = eventHandler && typeof eventHandler === "function" ? eventHandler : event.handler,
-        parse, rootNode, attachEvents;
+        nodes = [],
+        createNode, appendIfNode, isNode,
+        childNode, node, parse, rootNode, attachEvents;
 
       attachEvents = function (/*Node*/node, /*Object*/events) {
         // summary:
@@ -160,7 +164,7 @@ define([
         var eventMap = [],
           number = 0,
           done = 0,
-          type, event, mid, module, eventType, createFactory;
+          type, event, mid, eventType, createFactory;
 
         createFactory = function (/*Object*/event, /*Number*/number) {
           // summary:
@@ -174,7 +178,7 @@ define([
             var selector = event.selector,
               method = event.method,
               guid = deduper++,
-              args, handle;
+              handle;
 
             eventMap.push(guid);
 
@@ -216,50 +220,94 @@ define([
         }
       };
 
+      createNode = function (/*String*/selector) {
+        // summary:
+        //    Creates a node based on a selector if it is a valid CSS3
+        //    node selector.
+        // selector: String
+        // returns:
+        //    Node if the selector is a valid CSS3 node selector, otherwise it returns
+        //    the parsed selector.
+        var tag = selector.replace(tagSelector, ""),
+          invalidTags = {
+            title: true
+          },
+          creationSelector;
+
+        if (tag === "") {
+          creationSelector = "div" + selector;
+          tag = "div";
+        } else {
+          creationSelector = selector;
+        }
+
+        if (tags[tag] && !invalidTags[tag]) {
+          return put(creationSelector);
+        }
+
+        return tag;
+      };
+
+      isNode = function (/*Object*/object) {
+        // summary:
+        //    Determines if an object is a node.
+        // object: Object
+        return typeof Node === "object" ? object instanceof Node : object && typeof object.nodeType === "number" && typeof object.nodeName === "string";
+      };
+
+      appendIfNode = function (/*Object*/node, /*Node*/parentNode) {
+        // summary:
+        //    Appends an object to a parent node if it is a node.
+        // node: Object
+        // parentNode: node
+        if (isNode(node)) {
+          parentNode.appendChild(node);
+          return true;
+        }
+
+        return false;
+      };
+
       parse = function (/*TPS.node*/structure, /*Node*/parentNode, /*Boolean?*/isRoot) {
         // summary:
         //    Parse a node and its children.
         // structure: TuparseShakur.node
         // node: Node
         // isRoot: [optional] Boolean
-        var invalidTags = {
-            title: true
-          },
-          selector, tag, childNode, creationSelector;
+        var selector, childNode;
 
         for (selector in structure) {
           if (structure.hasOwnProperty(selector)) {
-            tag = selector.replace(tagSelector, "");
+            childNode = createNode(selector);
 
-            if (tag === "") {
-              creationSelector = "div" + selector;
-              tag = "div";
-            } else {
-              creationSelector = selector;
-            }
-
-            if (tags[tag] && !invalidTags[tag]) {
-              childNode = put(creationSelector);
-              parentNode.appendChild(childNode);
-              parse(structure[selector], childNode);
-            } else if (tag === "events") {
-              attachEvents(parentNode, structure[selector]);
-            } else if (!isRoot) {
-              if (selector === "text") {
-                parentNode.appendChild(document.createTextNode(structure[selector]));
-              } else {
-                parentNode.setAttribute(selector, structure[selector]);
+            if (!appendIfNode(childNode, parentNode)) {
+              if (childNode === "events") {
+                attachEvents(parentNode, structure[selector]);
+              } else if (!isRoot) {
+                if (selector === "text") {
+                  parentNode.appendChild(document.createTextNode(structure[selector]));
+                } else {
+                  parentNode.setAttribute(selector, structure[selector]);
+                }
               }
+            } else {
+              parse(structure[selector], childNode);
             }
           }
         }
       };
 
-      rootNode = document.createDocumentFragment();
-      parse(root, rootNode, true);
-      parent.appendChild(rootNode);
+      for (node in structure) {
+        if (structure.hasOwnProperty(node)) {
+          rootNode = document.createDocumentFragment();
+          childNode = createNode(node);
+          appendIfNode(childNode, rootNode);
+          parse(structure[node], childNode, true);
+          nodes.push(rootNode);
+        }
+      }
 
-      return parent;
+      return nodes;
     }
   };
 });

@@ -94,12 +94,13 @@ define([
             // returns:
             //    Fully qualified selector.
             var prefix = selector.substring(0, 1),
-              qualifiedSelector;
+              modifiedSelector, qualifiedSelector;
 
             if (prefix === ":") {
               qualifiedSelector = parent ? parent.getQualifiedSelector() + selector : selector;
             } else if (prefix === "&") {
-              qualifiedSelector = parent ? parent.getQualifiedSelector() + selector.substring(1, selector.length) : modifiedSelector;
+              modifiedSelector = selector.substring(1, selector.length);
+              qualifiedSelector = parent ? parent.getQualifiedSelector() + modifiedSelector : modifiedSelector;
             } else {
               qualifiedSelector = parent ? parent.getQualifiedSelector() + " " + selector : selector;
             }
