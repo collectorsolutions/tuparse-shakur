@@ -10,9 +10,16 @@ define([
       // text: String
       // id: [optional] String
       //    Id to be used on the style node.
-      var styles = document.createElement("style");
+      var styles = document.createElement("style"),
+        existingStyles;
 
       if (id) {
+        existingStyles = document.getElementById(id);
+
+        if (existingStyles) {
+          document.head.removeChild(existingStyles);
+        }
+
         styles.setAttribute("id", id);
       }
 
