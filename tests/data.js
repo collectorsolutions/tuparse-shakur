@@ -16,7 +16,7 @@ define({
           "h4.title": {
             text: "Please Enter Some Information"
           },
-          "div.form-group.hr-item-0": {
+          "div.form-group.tps-item-0": {
             label: {
               "for": "name",
               text: "Name"
@@ -27,7 +27,7 @@ define({
               type: "text"
             }
           },
-          "div.form-group.hr-item-1": {
+          "div.form-group.tps-item-1": {
             label: {
               "for": "email",
               text: "Email"

@@ -13,19 +13,28 @@
       require([
         "tuparse-shakur/parser",
         "tuparse-shakur/css",
+        "tuparse-shakur/dom",
         "tuparse-shakur/tests/data",
         "jquery"
-      ], function (parser, css, data) {
+      ], function (parser, css, dom, data) {
         var parsed = parser.parse(data),
           container = document.getElementById("mainContainer"),
-          node, i, nodes;
+          serialized, appendNodes;
 
-        nodes = parsed.dom;
-        i = 0;
-        while (node = nodes[i++]) {
-          container.appendChild(node);
-        }
+        appendNodes = function (nodes) {
+          var i = 0,
+            node;
 
+          console.log("Appending Nodes");
+
+          while (node = nodes[i++]) {
+            container.appendChild(node);
+          }
+        };
+
+        parsed.dom.then(appendNodes).then(appendNodes);
+
+        // Add styles.
         css.addStyles(parsed.css);
       });
     </script>
