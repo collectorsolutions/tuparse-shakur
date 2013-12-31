@@ -35,7 +35,7 @@ define([
           "class": true,
           style: true,
           script: true,
-          "data-hr-event-map": true
+          "data-tps-event-map": true
         },
         deduper = 0,
         structure = {},
@@ -124,10 +124,10 @@ define([
         // If the selector is already taken, we dedupe it to ensure
         // that each item will properly show up on the parent.
         if (parentPart[selector] || selectors[selector]) {
-          parentPart[selector + ".hr-item-" + deduper++] = parentPart[selector];
+          parentPart[selector + ".tps-item-" + deduper++] = parentPart[selector];
           delete parentPart[selector];
           selectors[selector] = true;
-          parentPart[selector + ".hr-item-" + deduper++] = part;
+          parentPart[selector + ".tps-item-" + deduper++] = part;
         } else {
           parentPart[selector] = part;
         }
