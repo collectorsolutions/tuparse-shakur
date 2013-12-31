@@ -2,8 +2,10 @@ define([
   "put-selector/put",
   "./vars",
   "./event",
+  "./Deferred",
+  "./all",
   "require"
-], function (put, vars, event, require) {
+], function (put, vars, event, Deferred, all, require) {
   "use strict";
 
   var createSelector = function (/*Node*/node, /*Node*/replacement) {
@@ -33,17 +35,19 @@ define([
           "class": true,
           style: true,
           script: true,
-          "data-hr-event-map": true
+          "data-tps-event-map": true
         },
         deduper = 0,
-        serialize, parseEvents, structure;
+        structure = {},
+        selectors = {},
+        serialize, parseEvents, forEachChild, parseAttributes, parseNode;
 
       parseEvents = function (/*Node*/node, /*Object*/part) {
         // summary:
         //    Parses event data off of node and adds it to the node part.
         // node: Node
         // part: Object
-        var map = node.getAttribute("data-hr-event-map"),
+        var map = node.getAttribute("data-tps-event-map"),
           i, total, event, events, type, selector;
 
         if (map) {
@@ -54,11 +58,11 @@ define([
           map = map.split(",");
 
           for (i = 0, total = map.length; i < total; i++) {
-            type = node.getAttribute("data-hr-event-type-" + map[i]);
+            type = node.getAttribute("data-tps-event-type-" + map[i]);
             event = {};
-            event.mid = node.getAttribute("data-hr-event-mid-" + map[i]);
-            event.method = node.getAttribute("data-hr-event-method-" + map[i]);
-            selector = node.getAttribute("data-hr-event-selector-" + map[i]);
+            event.mid = node.getAttribute("data-tps-event-mid-" + map[i]);
+            event.method = node.getAttribute("data-tps-event-method-" + map[i]);
+            selector = node.getAttribute("data-tps-event-selector-" + map[i]);
 
             if (selector) {
               event.selector = selector;
@@ -73,6 +77,64 @@ define([
         }
       };
 
+      forEachChild = function (/*Node*/node, /*Function*/fn) {
+        // summary:
+        //    For every child node of a node, execute a function.
+        // node: Node
+        // fn: Function
+        var i, childNodes, child;
+
+        i = 0;
+        childNodes = node.childNodes;
+        while(child = childNodes[i++]) {
+          fn(child);
+        }
+      };
+
+      parseAttributes = function (/*Node*/node, /*Object*/part) {
+        // summary:
+        //    Parses a node's attributes and adds the attributes to the node's part.
+        // node: Node
+        // part: Object
+        var i, attributes, attribute;
+
+        i = 0;
+        attributes = node.attributes;
+        while (attribute = attributes[i++]) {
+          serialize(attribute, part);
+        }
+      };
+
+      parseNode = function (/*Node*/node, /*Object*/part, /*Object*/parentPart) {
+        // summary:
+        //    Parses a node, adding its selector and part to the parentPart.
+        // node: Node
+        // part: Object
+        // parentPart: Object
+        // returns:
+        //    false if the parse fails.
+        //    true if the parse is successful.
+        var tagName = node.tagName.toLowerCase(),
+          selector = createSelector(node, tagName === "body" ? put("div") : null);
+
+        if (invalidNodes[tagName]) {
+          return false;
+        }
+
+        // If the selector is already taken, we dedupe it to ensure
+        // that each item will properly show up on the parent.
+        if (parentPart[selector] || selectors[selector]) {
+          parentPart[selector + ".tps-item-" + deduper++] = parentPart[selector];
+          delete parentPart[selector];
+          selectors[selector] = true;
+          parentPart[selector + ".tps-item-" + deduper++] = part;
+        } else {
+          parentPart[selector] = part;
+        }
+
+        return true;
+      };
+
       serialize = function (/*Node*/node, /*Object*/parentPart) {
         // summary:
         //    Serializes a node and appends the appropriate metadata
@@ -80,50 +142,23 @@ define([
         // node: Node
         // parentPart: Object
         var part = {},
-          selectors = {},
-          tagName, i, child, selector, attribute, attributes, childNodes;
+          attribute;
 
         if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-          tagName = node.tagName.toLowerCase();
-
-          if (invalidNodes[tagName]) {
+          if (!parseNode(node, part, parentPart)) {
             return;
           }
 
-          selector = createSelector(node, tagName === "body" ? put("div") : null);
-
-          if (parentPart) {
-            // If the selector is already taken, we dedupe it to ensure
-            // that each item will properly show up on the parent.
-            if (parentPart[selector] || selectors[selector]) {
-              parentPart[selector + ".hr-item-" + deduper++] = parentPart[selector];
-              delete parentPart[selector];
-              selectors[selector] = true;
-              parentPart[selector + ".hr-item-" + deduper++] = part;
-            } else {
-              parentPart[selector] = part;
-            }
-          } else {
-            structure = part;
-          }
-
-          i = 0;
-          attributes = node.attributes;
-          while (attribute = attributes[i++]) {
+          forEachChild(node, function (child) {
             serialize(child, part);
-          }
+          });
 
-          i = 0;
-          childNodes = node.childNodes;
-          while (child = childNodes[i++]) {
-            serialize(child, part);
-          }
-
+          parseAttributes(node, part);
           parseEvents(node, part);
         } else if (node.nodeType === 2 /* Node.ATTRIBUTE_NODE */) {
           attribute = node.nodeName;
 
-          if (!invalidNodes[attribute] && !/data\-hr\-event/.test(attribute)) {
+          if (!invalidNodes[attribute] && !/data\-tps\-event/.test(attribute)) {
             parentPart[attribute] = node.nodeValue;
           }
         } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
@@ -131,11 +166,11 @@ define([
         }
       };
 
-      serialize(root);
+      forEachChild(root, function (child) {
+        serialize(child, structure);
+      });
 
-      return {
-        root: structure
-      };
+      return structure;
     },
     parse: function (/*TPS.dom*/structure, /*Function?*/opts) {
       // summary:
@@ -153,6 +188,10 @@ define([
         eventHandler = options.handler,
         handler = eventHandler && typeof eventHandler === "function" ? eventHandler : event.handler,
         nodes = [],
+        DeferredFactory = options.Deferred || Deferred,
+        allPromises = options.all || all,
+        dfd = new DeferredFactory(),
+        promises = [],
         createNode, appendIfNode, isNode,
         childNode, node, parse, rootNode, attachEvents;
 
@@ -162,11 +201,16 @@ define([
         // node: Node
         // events: Object
         var eventMap = [],
-          number = 0,
-          done = 0,
-          type, event, mid, eventType, createFactory;
+          promises = [],
+          attachDfd = new DeferredFactory(),
+          type, event, mid, eventType, updateEventMap,
+          createFactory, dfd, promise;
 
-        createFactory = function (/*Object*/event, /*Number*/number) {
+        updateEventMap = function () {
+          node.setAttribute("data-tps-event-map", eventMap.join(","));
+        };
+
+        createFactory = function (/*Object*/event, /*Deferred.promise*/promise) {
           // summary:
           //    Creates the factory for require.
           // event: Object
@@ -174,7 +218,13 @@ define([
           // number: Number
           //    Number used to determine which factory number
           //    this is to compare to the number that have been processed.
-          return function (module) {
+          // returns:
+          //    Factory function.
+          return function (/*Object*/module) {
+            // summary:
+            //    Factory function, which will take a module, and use it for
+            //    the event listener.
+            // module: Object
             var selector = event.selector,
               method = event.method,
               guid = deduper++,
@@ -188,25 +238,20 @@ define([
 
             eventType = type.replace(cleanEvent, "");
 
-            node.setAttribute("data-hr-event-type-" + guid, eventType);
-            node.setAttribute("data-hr-event-mid-" + guid, mid);
-            node.setAttribute("data-hr-event-method-" + guid, method);
+            node.setAttribute("data-tps-event-type-" + guid, eventType);
+            node.setAttribute("data-tps-event-mid-" + guid, mid);
+            node.setAttribute("data-tps-event-method-" + guid, method);
 
             // A selector will be present if the user wishes to use event delegation.
             // Replace any characters that isn't a-z to allow the user to create multiple events of the same time
             // with unique identifiers, e.g. click-1, click-2
             if (selector) {
-              node.setAttribute("data-hr-event-selector-" + guid, selector);
+              node.setAttribute("data-tps-event-selector-" + guid, selector);
             }
 
             handler(node, eventType, selector, handle);
-            done++;
-
-            // Since require is done asynchronously, we need to keep track of number of events found
-            // and the number of events processed.  When those numbers match, we're done parsing events.
-            if (done === number) {
-              node.setAttribute("data-hr-event-map", eventMap.join(","));
-            }
+            updateEventMap();
+            promise.resolve();
           };
         };
 
@@ -214,10 +259,19 @@ define([
           if (events.hasOwnProperty(type)) {
             event = events[type];
             mid = event.mid;
+            dfd = new Deferred();
+            promise = dfd.promise;
+            promises.push(promise);
 
-            require([mid], createFactory(event, ++number));
+            require([mid], createFactory(event, promise));
           }
         }
+
+        allPromises(promises).then(function () {
+          attachDfd.promise.resolve();
+        });
+
+        return attachDfd.promise;
       };
 
       createNode = function (/*String*/selector) {
@@ -226,8 +280,8 @@ define([
         //    node selector.
         // selector: String
         // returns:
-        //    Node if the selector is a valid CSS3 node selector, otherwise it returns
-        //    the parsed selector.
+        //    Node if the selector is a valid CSS3 node selector.
+        //    Parsed selector if it is not.
         var tag = selector.replace(tagSelector, ""),
           invalidTags = {
             title: true
@@ -252,6 +306,9 @@ define([
         // summary:
         //    Determines if an object is a node.
         // object: Object
+        // returns:
+        //    true if the object is a node.
+        //    false if the object is not a node.
         return typeof Node === "object" ? object instanceof Node : object && typeof object.nodeType === "number" && typeof object.nodeName === "string";
       };
 
@@ -260,6 +317,9 @@ define([
         //    Appends an object to a parent node if it is a node.
         // node: Object
         // parentNode: node
+        // returns:
+        //    true if it is a node.
+        //    false if it is not a node.
         if (isNode(node)) {
           parentNode.appendChild(node);
           return true;
@@ -268,13 +328,16 @@ define([
         return false;
       };
 
-      parse = function (/*TPS.node*/structure, /*Node*/parentNode, /*Boolean?*/isRoot) {
+      parse = function (/*TPS.node*/structure, /*Node*/parentNode) {
         // summary:
         //    Parse a node and its children.
         // structure: TuparseShakur.node
         // node: Node
-        // isRoot: [optional] Boolean
-        var selector, childNode;
+        // returns:
+        //    Deferred.promise
+        var parseDfd = new DeferredFactory(),
+          promises = [],
+          selector, childNode;
 
         for (selector in structure) {
           if (structure.hasOwnProperty(selector)) {
@@ -282,8 +345,8 @@ define([
 
             if (!appendIfNode(childNode, parentNode)) {
               if (childNode === "events") {
-                attachEvents(parentNode, structure[selector]);
-              } else if (!isRoot) {
+                promises.push(attachEvents(parentNode, structure[selector]));
+              } else {
                 if (selector === "text") {
                   parentNode.appendChild(document.createTextNode(structure[selector]));
                 } else {
@@ -295,6 +358,16 @@ define([
             }
           }
         }
+
+        if (promises.length) {
+          allPromises(promises).then(function () {
+            parseDfd.promise.resolve();
+          });
+        } else {
+          parseDfd.promise.resolve();
+        }
+
+        return parseDfd.promise;
       };
 
       for (node in structure) {
@@ -302,12 +375,16 @@ define([
           rootNode = document.createDocumentFragment();
           childNode = createNode(node);
           appendIfNode(childNode, rootNode);
-          parse(structure[node], childNode, true);
+          promises.push(parse(structure[node], childNode));
           nodes.push(rootNode);
         }
       }
 
-      return nodes;
+      allPromises(promises).then(function () {
+        dfd.promise.resolve(nodes);
+      });
+
+      return dfd.promise;
     }
   };
 });
