@@ -414,7 +414,7 @@ define([
       }
 
       return {
-        promise: dfd.promise,
+        then: dfd.promise.then,
         appendAll: function (/*Node*/parentNode) {
           // summary:
           //    Append all the nodes to a parent node.
