@@ -86,7 +86,6 @@ define({
         ".modal-container": {
           width: "100%",
           margin: "0px auto",
-          "margin-top": "20px",
           border: "1px solid @black",
           padding: "10px",
           ".header": {
