@@ -8,7 +8,9 @@ define([
 ], function (put, vars, event, Deferred, all, require) {
   "use strict";
 
-  var createSelector = function (/*Node*/node, /*Node*/replacement) {
+  var createSelector, appendNodes;
+
+  createSelector = function (/*Node*/node, /*Node*/replacement) {
     // summary:
     //    Creates a CSS selector for the provided node.
     // node: Node
@@ -21,7 +23,21 @@ define([
     return (replacement || node).tagName.toLowerCase() + (classes.length ? "." + classes : "");
   };
 
+  appendNodes = function (/*Node[]*/nodes, /*Node*/parentNode) {
+    // summary:
+    //    Convenience method for appending all nodes to a parent node.
+    // nodes: Node[]
+    // parentNode: Node
+    var i = 0,
+      node;
+
+    while (node = nodes[i++]) {
+      parentNode.appendChild(node);
+    }
+  };
+
   return {
+    appendNodes: appendNodes,
     serializeDom: function (/*Node?*/rootNode) {
       // summary:
       //    Turns the DOM into a TuparseShakur DOM structure, starting
@@ -192,7 +208,7 @@ define([
         allPromises = options.all || all,
         dfd = new DeferredFactory(),
         promises = [],
-        createNode, appendIfNode, isNode,
+        createNode, appendIfNode, isNode, appendWhenDone,
         childNode, node, parse, rootNode, attachEvents;
 
       attachEvents = function (/*Node*/node, /*Object*/events) {
@@ -384,7 +400,28 @@ define([
         dfd.promise.resolve(nodes);
       });
 
-      return dfd.promise;
+      appendWhenDone = function (/*Node*/parentNode) {
+        // summary:
+        //    Append the nodes to a parent node when the parsing has been completed.
+        // parentNode: Node
+        dfd.promise.then(function (nodes) {
+          appendNodes(nodes, parentNode || document.body);
+        });
+      };
+
+      if (options.appendWhenDone) {
+        appendWhenDone(options.parentNode || document.body);
+      }
+
+      return {
+        promise: dfd.promise,
+        appendAll: function (/*Node*/parentNode) {
+          // summary:
+          //    Append all the nodes to a parent node.
+          // parentNode: Node
+          appendWhenDone(parentNode);
+        }
+      }
     }
   };
 });

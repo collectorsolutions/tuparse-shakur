@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" />
   </head>
   <body>
-    <div id="mainContainer"></div>
+    <div id="mainContainer" class=".tuparse-test-container"></div>
 
     <!-- Point this to your requirejs file -->
     <script src="/requirejs/require.js"></script>
@@ -17,25 +17,26 @@
         "tuparse-shakur/tests/data",
         "jquery"
       ], function (parser, css, dom, data) {
-        var parsed = parser.parse(data),
-          container = document.getElementById("mainContainer"),
-          serialized, appendNodes;
+        var container = document.getElementById("mainContainer"),
+          serialized;
 
-        appendNodes = function (nodes) {
-          var i = 0,
-            node;
-
-          console.log("Appending Nodes");
-
-          while (node = nodes[i++]) {
-            container.appendChild(node);
+        parser.parse(data, {
+          css: {
+            appendWhenDone: true
+          },
+          dom: {
+            appendWhenDone: true,
+            parentNode: container
           }
-        };
+        });
 
-        parsed.dom.then(appendNodes).then(appendNodes);
+        serialized = dom.serializeDom(container);
 
-        // Add styles.
-        css.addStyles(parsed.css);
+        container.innerHTML = "";
+
+        dom.parse(serialized, {
+          appendWhenDone: true
+        });
       });
     </script>
   </body>

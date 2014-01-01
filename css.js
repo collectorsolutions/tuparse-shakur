@@ -3,30 +3,32 @@ define([
 ], function (vars) {
   "use strict";
 
-  return {
-    addStyles: function (/*String*/text, /*String?*/id) {
-      // summary:
-      //    Creates a style element and adds it to the document head.
-      // text: String
-      // id: [optional] String
-      //    Id to be used on the style node.
-      var styles = document.createElement("style"),
-        existingStyles;
+  var addStyles = function (/*String*/text, /*String?*/id) {
+    // summary:
+    //    Creates a style element and adds it to the document head.
+    // text: String
+    // id: [optional] String
+    //    Id to be used on the style node.
+    var styles = document.createElement("style"),
+      existingStyles;
 
-      if (id) {
-        existingStyles = document.getElementById(id);
+    if (id) {
+      existingStyles = document.getElementById(id);
 
-        if (existingStyles) {
-          document.head.removeChild(existingStyles);
-        }
-
-        styles.setAttribute("id", id);
+      if (existingStyles) {
+        document.head.removeChild(existingStyles);
       }
 
-      styles.innerHTML = text;
+      styles.setAttribute("id", id);
+    }
 
-      document.head.appendChild(styles);
-    },
+    styles.innerHTML = text;
+
+    document.head.appendChild(styles);
+  };
+
+  return {
+    addStyles: addStyles,
     parse: function (/*TPS.css*/structure, /*Object?*/opts) {
       // summary:
       //    Parse a css structure into CSS text.
@@ -155,6 +157,10 @@ define([
 
       if (options.addStyles) {
         this.addStyles(text, options.id);
+      }
+
+      if (options.appendWhenDone) {
+        addStyles(text, options.stylesId);
       }
 
       return text;

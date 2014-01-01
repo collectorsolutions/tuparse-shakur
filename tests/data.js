@@ -82,48 +82,50 @@ define({
       "@gray": "#888"
     },
     styles: {
-      ".modal-container": {
-        width: "1170px",
-        margin: "0px auto",
-        "margin-top": "20px",
-        border: "1px solid @black",
-        padding: "10px",
-        ".header": {
-          ".title": {
-            margin: 0,
-            padding: 0,
-            display: "inline-block"
+      ".tuparse-test-container": {
+        ".modal-container": {
+          width: "1170px",
+          margin: "0px auto",
+          "margin-top": "20px",
+          border: "1px solid @black",
+          padding: "10px",
+          ".header": {
+            ".title": {
+              margin: 0,
+              padding: 0,
+              display: "inline-block"
+            },
+            "border-bottom": "1px solid @black"
           },
-          "border-bottom": "1px solid @black"
-        },
-        ".body": {
-          ".form-group": {
-            label: {
-              color: "@gray"
+          ".body": {
+            ".form-group": {
+              label: {
+                color: "@gray"
+              }
             }
-          }
-        },
-        ".footer": {
-          overflow: "auto",
-          "padding-top": "10px",
-          "border-top": "1px solid @black",
-          ".form-group": {
-            margin: 0,
-            padding: 0,
-            ".btn": {
-              margin: "5px",
-              width: "100px",
-              "&.btn-default": {
-                ":hover": {
-                  "background-color": "#E74C3C"
+          },
+          ".footer": {
+            overflow: "auto",
+            "padding-top": "10px",
+            "border-top": "1px solid @black",
+            ".form-group": {
+              margin: 0,
+              padding: 0,
+              ".btn": {
+                margin: "5px",
+                width: "100px",
+                "&.btn-default": {
+                  ":hover": {
+                    "background-color": "#E74C3C"
+                  }
                 }
               }
             }
           }
+        },
+        ".title": {
+          "font-family": "'Comic Sans MS', cursive, sans-serif"
         }
-      },
-      ".title": {
-        "font-family": "'Comic Sans MS', cursive, sans-serif"
       }
     }
   }
