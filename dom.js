@@ -219,21 +219,20 @@ define([
         var eventMap = [],
           promises = [],
           attachDfd = new DeferredFactory(),
-          type, event, mid, eventType, updateEventMap,
-          createFactory, dfd, promise;
+          type, updateEventMap, requireAndAttach,
+          createFactory;
 
         updateEventMap = function () {
           node.setAttribute("data-tps-event-map", eventMap.join(","));
         };
 
-        createFactory = function (/*Object*/event, /*Deferred.promise*/promise) {
+        createFactory = function (/*Object*/event, /*String*/type, /*Deferred.promise*/promise) {
           // summary:
           //    Creates the factory for require.
           // event: Object
           //    Object containing event data.
-          // number: Number
-          //    Number used to determine which factory number
-          //    this is to compare to the number that have been processed.
+          // type: String
+          // promise: Deferred.promise
           // returns:
           //    Factory function.
           return function (/*Object*/module) {
@@ -242,15 +241,12 @@ define([
             //    the event listener.
             // module: Object
             var selector = event.selector,
+              mid = event.mid,
               method = event.method,
               guid = deduper++,
-              handle;
+              eventType;
 
             eventMap.push(guid);
-
-            handle = function (e) {
-              module[method].call(this, e);
-            };
 
             eventType = type.replace(cleanEvent, "");
 
@@ -265,10 +261,12 @@ define([
               node.setAttribute("data-tps-event-selector-" + guid, selector);
             }
 
-            if (eventType !== "tps.created") {
-              handler(node, eventType, selector, handle);
+            if (eventType !== "_created") {
+              handler(node, eventType, selector, function (e) {
+                module[method].call(this, e);
+              });
             } else {
-              handle(node);
+              module[method](node);
             }
 
             updateEventMap();
@@ -276,15 +274,22 @@ define([
           };
         };
 
+        requireAndAttach = function (/*Object*/event) {
+          // summary:
+          //    Require a module and attach the event.
+          // event: Object
+          var mid = event.mid,
+            dfd = new Deferred(),
+            promise = dfd.promise;
+
+          require([mid], createFactory(event, type, promise));
+
+          return promise;
+        };
+
         for (type in events) {
           if (events.hasOwnProperty(type)) {
-            event = events[type];
-            mid = event.mid;
-            dfd = new Deferred();
-            promise = dfd.promise;
-            promises.push(promise);
-
-            require([mid], createFactory(event, promise));
+            promises.push(requireAndAttach(events[type]));
           }
         }
 
@@ -426,7 +431,7 @@ define([
           // parentNode: Node
           appendWhenDone(parentNode);
         }
-      }
+      };
     }
   };
 });
