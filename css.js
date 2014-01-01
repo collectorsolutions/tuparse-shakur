@@ -83,7 +83,7 @@ define([
             //    Add a rule to the selector.
             // property: String
             // value: String
-            rules.push(property + ":" + (typeof value === "string" ? value.replace(/\@[^\s]+/g, function (match) {
+            rules.push(property.replace("_", "-") + ":" + (typeof value === "string" ? value.replace(/\@[^\s]+/g, function (match) {
               var value = variables[match];
 
               return value || match;
