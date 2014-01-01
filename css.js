@@ -3,23 +3,27 @@ define([
 ], function (vars) {
   "use strict";
 
-  var addStyles = function (/*String*/text, /*String?*/id) {
+  var addStyles = function (/*String*/text, /*String|Node?*/id) {
     // summary:
     //    Creates a style element and adds it to the document head.
     // text: String
-    // id: [optional] String
-    //    Id to be used on the style node.
+    // id: [optional] String|Node
+    //    Id to be used on the style node or the node to which the styles should be added.
     var styles = document.createElement("style"),
       existingStyles;
 
     if (id) {
-      existingStyles = document.getElementById(id);
+      if (typeof id === "string") {
+        existingStyles = document.getElementById(id);
 
-      if (existingStyles) {
-        document.head.removeChild(existingStyles);
+        if (existingStyles) {
+          document.head.removeChild(existingStyles);
+        }
+
+        styles.setAttribute("id", id);
+      } else {
+        styles = id;
       }
-
-      styles.setAttribute("id", id);
     }
 
     styles.innerHTML = text;
@@ -160,7 +164,7 @@ define([
       }
 
       if (options.appendWhenDone) {
-        addStyles(text, options.stylesId);
+        addStyles(text, options.stylesId || options.stylesNode);
       }
 
       return text;
