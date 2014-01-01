@@ -373,7 +373,7 @@ define([
               if (childNode === "events") {
                 promises.push(attachEvents(parentNode, structure[selector]));
               } else {
-                if (selector === "text") {
+                if (selector === "_text") {
                   parentNode.appendChild(document.createTextNode(structure[selector]));
                 } else {
                   parentNode.setAttribute(selector, structure[selector]);

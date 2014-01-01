@@ -4,42 +4,42 @@ define({
       role: "dialog",
       "div.header": {
         "h3.title": {
-          text: "Header"
+          _text: "Header"
         },
         "button.close.pull-right": {
-          text: "x",
+          _text: "x",
           type: "button"
         }
       },
       "div.body": {
         "form": {
           "h4.title": {
-            text: "Please Enter Some Information"
+            _text: "Please Enter Some Information"
           },
           "div.form-group.tps-item-0": {
             label: {
               "for": "name",
-              text: "Name"
+              _text: "Name"
             },
             "input.form-control": {
               id: "name",
               name: "name",
-              type: "text"
+              type: "_text"
             }
           },
           "div.form-group.tps-item-1": {
             label: {
               "for": "email",
-              text: "Email"
+              _text: "Email"
             },
             "div.input-group": {
               "span.input-group-addon": {
-                text: "@"
+                _text: "@"
               },
               "input.form-control": {
                 id: "email",
                 name: "email",
-                type: "text"
+                type: "_text"
               }
             }
           }
@@ -55,7 +55,7 @@ define({
             }
           },
           "button.btn.btn-success": {
-            text: "OK",
+            _text: "OK",
             type: "button",
             events: {
               "click": {
@@ -69,7 +69,7 @@ define({
             }
           },
           "button.btn.btn-default": {
-            text: "Cancel",
+            _text: "Cancel",
             type: "button"
           }
         }
