@@ -84,7 +84,7 @@ define({
     styles: {
       ".tuparse-test-container": {
         ".modal-container": {
-          width: "1170px",
+          width: "100%",
           margin: "0px auto",
           "margin-top": "20px",
           border: "1px solid @black",
