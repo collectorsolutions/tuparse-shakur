@@ -23,8 +23,6 @@ define([
         styles.setAttribute("id", id);
       } else {
         styles = id;
-        document.head.removeChild(styles);
-        styles.innerHTML = "";
       }
     }
 
