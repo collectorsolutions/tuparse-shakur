@@ -265,7 +265,12 @@ define([
               node.setAttribute("data-tps-event-selector-" + guid, selector);
             }
 
-            handler(node, eventType, selector, handle);
+            if (eventType !== "tps.created") {
+              handler(node, eventType, selector, handle);
+            } else {
+              handle(node);
+            }
+
             updateEventMap();
             promise.resolve();
           };
