@@ -3,7 +3,7 @@ define([
 ], function (promise) {
   "use strict";
 
-  return function () {
+  return function (dfd) {
     // summary:
     //    Bridge the gap between jQuery promise structure and Dojo promise structure
     //    by normalizing the signature of the Deferred object.
@@ -12,10 +12,18 @@ define([
     // returns:
     //    Deferred
     var $ = jQuery === undefined ? function () {} : jQuery,
-      dfd = $.Deferred && $.Deferred() || null;
+      wrapper = promise(dfd);
 
     return {
-      promise: promise(dfd)
+      promise: wrapper,
+      resolve: wrapper.resolve,
+      reject: wrapper.reject,
+      isResolved: dfd.isResolved,
+      isRejected: dfd.isRejected,
+      isFulfilled: dfd.isFulfilled,
+      isCanceled: dfd.isCanceled,
+      progress: wrapper.progress,
+      then: wrapper.then
     };
   };
 });

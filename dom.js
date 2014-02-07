@@ -206,7 +206,7 @@ define([
         nodes = [],
         DeferredFactory = options.Deferred || Deferred,
         allPromises = options.all || all,
-        dfd = new DeferredFactory(),
+        dfd = new Deferred(new DeferredFactory()),
         promises = [],
         createNode, appendIfNode, isNode, appendWhenDone,
         childNode, node, parse, rootNode, attachEvents;
@@ -218,7 +218,7 @@ define([
         // events: Object
         var eventMap = [],
           promises = [],
-          attachDfd = new DeferredFactory(),
+          attachDfd = new Deferred(new DeferredFactory()),
           type, updateEventMap, requireAndAttach,
           createFactory;
 
@@ -279,7 +279,7 @@ define([
           //    Require a module and attach the event.
           // event: Object
           var mid = event.mid,
-            dfd = new Deferred(),
+            dfd = new Deferred(new DeferredFactory()),
             promise = dfd.promise;
 
           require([mid], createFactory(event, type, promise));
@@ -361,9 +361,11 @@ define([
         // node: Node
         // returns:
         //    Deferred.promise
-        var parseDfd = new DeferredFactory(),
+        var parseDfd = new Deferred(new DeferredFactory()),
           promises = [],
           selector, childNode;
+
+        console.log("parseDfd", parseDfd);
 
         for (selector in structure) {
           if (structure.hasOwnProperty(selector)) {

@@ -16,15 +16,7 @@ define(function () {
         // returns:
         //    Deferred.promise
         if (dfd) {
-          dfd.done(success);
-
-          if (error) {
-            dfd.fail(error);
-          }
-
-          if (progress) {
-            dfd.notify(progress);
-          }
+          (dfd.done || dfd.then)(success, error, progress);
         }
 
         return this;
@@ -71,6 +63,9 @@ define(function () {
         if (dfd) {
           dfd.resolve.apply(dfd, arguments);
         }
+      },
+      isResolved: function () {
+        return dfd.isResolved();
       }
     };
   };
