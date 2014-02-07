@@ -365,8 +365,6 @@ define([
           promises = [],
           selector, childNode;
 
-        console.log("parseDfd", parseDfd);
-
         for (selector in structure) {
           if (structure.hasOwnProperty(selector)) {
             childNode = createNode(selector);
