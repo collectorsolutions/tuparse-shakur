@@ -64,6 +64,11 @@ define(function () {
           dfd.resolve.apply(dfd, arguments);
         }
       },
+      reject: function () {
+        if (dfd) {
+          dfd.reject.apply(dfd, arguments);
+        }
+      },
       isResolved: function () {
         return dfd.isResolved();
       }
