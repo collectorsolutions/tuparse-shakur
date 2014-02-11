@@ -12,7 +12,7 @@ define(function () {
       // handle: Function
       // returns:
       //    jQuery(node) or null if jQuery is `undefined`
-      var $ = jQuery === undefined ? function () {} : jQuery,
+      var $ = typeof jQuery === "undefined" ? function () {} : jQuery,
         args = handle ? [type, selector, handle] : [type, selector],
         element = $(node);
 

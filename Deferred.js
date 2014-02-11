@@ -11,7 +11,7 @@ define([
     //    a consistent promise structure.
     // returns:
     //    Deferred
-    var $ = jQuery === undefined ? function () {} : jQuery,
+      var $ = typeof jQuery === "undefined" ? function () {} : jQuery,
       wrapper = promise(dfd);
 
     return {
