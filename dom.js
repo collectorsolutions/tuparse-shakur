@@ -204,7 +204,7 @@ define([
         eventHandler = options.handler,
         handler = eventHandler && typeof eventHandler === "function" ? eventHandler : event.handler,
         nodes = [],
-        DeferredFactory = options.Deferred || Deferred,
+        DeferredFactory = options.Deferred || function(){},
         allPromises = options.all || all,
         dfd = new Deferred(new DeferredFactory()),
         promises = [],

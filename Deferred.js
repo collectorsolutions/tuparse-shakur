@@ -3,7 +3,7 @@ define([
 ], function (promise) {
   "use strict";
 
-  return function (dfd) {
+  return function (deferred) {
     // summary:
     //    Bridge the gap between jQuery promise structure and Dojo promise structure
     //    by normalizing the signature of the Deferred object.
@@ -11,7 +11,10 @@ define([
     //    a consistent promise structure.
     // returns:
     //    Deferred
-      var $ = typeof jQuery === "undefined" ? function () {} : jQuery,
+    var $ = typeof jQuery === "undefined" ? function () {
+        return { Deferred: function () {} };
+      } : jQuery,
+      dfd = deferred || $.Deferred(),
       wrapper = promise(dfd);
 
     return {
