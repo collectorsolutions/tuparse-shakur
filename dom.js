@@ -204,9 +204,12 @@ define([
         eventHandler = options.handler,
         handler = eventHandler && typeof eventHandler === "function" ? eventHandler : event.handler,
         nodes = [],
-        DeferredFactory = options.Deferred || function(){},
         allPromises = options.all || all,
-        dfd = new Deferred(new DeferredFactory()),
+        providedDeferred = typeof options.Deferred !== "undefined",
+        createDeferred = function () {
+          return new Deferred(providedDeferred ? options.Deferred() : null);
+        },
+        dfd = createDeferred(),
         promises = [],
         createNode, appendIfNode, isNode, appendWhenDone,
         childNode, node, parse, rootNode, attachEvents;
@@ -218,7 +221,7 @@ define([
         // events: Object
         var eventMap = [],
           promises = [],
-          attachDfd = new Deferred(new DeferredFactory()),
+          attachDfd = createDeferred(),
           type, updateEventMap, requireAndAttach,
           createFactory;
 
@@ -279,7 +282,7 @@ define([
           //    Require a module and attach the event.
           // event: Object
           var mid = event.mid,
-            dfd = new Deferred(new DeferredFactory()),
+            dfd = createDeferred(),
             promise = dfd.promise;
 
           require([mid], createFactory(event, type, promise));
@@ -361,7 +364,7 @@ define([
         // node: Node
         // returns:
         //    Deferred.promise
-        var parseDfd = new Deferred(new DeferredFactory()),
+        var parseDfd = createDeferred(),
           promises = [],
           selector, childNode;
 
