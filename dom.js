@@ -207,7 +207,7 @@ define([
         allPromises = options.all || all,
         providedDeferred = typeof options.Deferred !== "undefined",
         createDeferred = function () {
-          return new Deferred(providedDeferred ? options.Deferred() : null);
+          return new Deferred(providedDeferred ? new options.Deferred() : null);
         },
         dfd = createDeferred(),
         promises = [],
