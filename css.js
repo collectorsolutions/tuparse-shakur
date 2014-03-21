@@ -26,7 +26,11 @@ define([
       }
     }
 
-    styles.innerHTML = text;
+    if (styles.styleSheet) {
+      styles.styleSheet.cssText = text;
+    } else {
+      styles.innerHTML = text;
+    }
 
     document.head.appendChild(styles);
   };
